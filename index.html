@@ -163,7 +163,7 @@
                 }
                 pub_nub.publish({
                     channel: 'liveinteraction',
-                    message: {midi: midiVal}
+                    message: {midi: midiVal + ' ' + midiVal}
                 });
             }, false);
         }
