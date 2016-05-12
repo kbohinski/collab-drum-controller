@@ -1,0 +1,172 @@
+<!--
+/**
+ * @author Kevin Bohinski <bohinsk1@tcnj.edu>
+ * @version 1.0
+ * @since 2016-5-2
+ *
+ * Course:        IMM 350 (Interactive Music Programming)
+ * Instructor:    Dr. Nakra
+ * Project Name:  Final Project
+ * Description:   • "Push a Max patch further".
+ *
+ * Filename:      index.html
+ * Description:   HTML file that interacts with PubNub from user
+ *                input to send live messages to Max 7.
+ * Last Modified: 2016-5-2
+ */
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- HTML meta key, value, pairs -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- HTML meta author, description, and title -->
+    <meta name="author" content="https://keybase.io/kbohinski">
+    <meta name="description" content="Live Audience Interaction">
+    <title>Live Audience Interaction</title>
+
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
+
+    <!-- CSS Reset -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.css">
+
+    <!-- Milligram CSS minified -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.1.0/milligram.min.css">
+
+    <style>
+        .button-large {
+            font-size: 1.4rem;
+            width: 100%;
+            line-height: 4.5rem;
+            padding: 0 2rem;
+        }
+    </style>
+
+    <!-- JS -->
+    <!-- CDN in the PubNub JS SDK -->
+    <script src="http://cdn.pubnub.com/pubnub-3.14.3.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Live Audience Interaction!</h1>
+    <div class="buttons">
+        <div class="row">
+            <div class="column">
+                <a class="button button-large" id="btn00" href="#"></a>
+            </div>
+            <div class="column">
+                <a class="button button-large" id="btn10" href="#"></a>
+            </div>
+            <div class="column">
+                <a class="button button-large" id="btn20" href="#"></a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <a class="button button-large" id="btn01" href="#"></a>
+            </div>
+            <div class="column">
+                <a class="button button-large" id="btn11" href="#"></a>
+            </div>
+            <div class="column">
+                <a class="button button-large" id="btn21" href="#"></a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column">
+                <a class="button button-large" id="btn02" href="#"></a>
+            </div>
+            <div class="column">
+                <a class="button button-large" id="btn12" href="#"></a>
+            </div>
+            <div class="column">
+                <a class="button button-large" id="btn22" href="#"></a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    /* Uses ECMAScript's strict mode */
+    "use strict";
+
+    /* As per spec, wrap everything in an IIFE, with defensive semicolon */
+    ;
+    (function () {
+        /* Set PubNub Keys */
+        let PUBNUB_PUB_KEY = 'pub-c-a0d12b56-2353-4a7c-b021-d0bab6fcfbdf';
+        let PUBNUB_SUB_KEY = 'sub-c-9682eaf8-ec9d-11e5-8112-02ee2ddab7fe';
+
+        /* Instantiate a new instance of PubNub */
+        let pub_nub = PUBNUB.init({
+            publish_key: PUBNUB_PUB_KEY,
+            subscribe_key: PUBNUB_SUB_KEY,
+            error: function (error) {
+                console.log('Error:', error);
+            }
+        });
+
+        /* Subscribe to the channel */
+        pub_nub.subscribe({
+            channel: 'liveinteraction',
+            message: function (m) {
+            },
+            error: function (error) {
+                console.log('Error: ' + JSON.stringify(error));
+            }
+        });
+
+        /* Shortcut el('x') to document.getElementById('x') */
+        let el = document.getElementById.bind(document);
+        let buttons = document.querySelectorAll(".row .button");
+
+        window.onresize = function (e) {
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].style.height = buttons[i].offsetWidth + 'px';
+            }
+        };
+
+        for (let i = 0; i < buttons.length; i++) {
+            buttons[i].style.height = buttons[i].offsetWidth + 'px';
+            buttons[i].addEventListener('click', function buttonClicked(e) {
+                /* Prevent link from being navigated to */
+                e.preventDefault();
+                /* Determine which button was actually clicked */
+                let el = e.target;
+                /* Send a message to let the other player's browser know */
+                let x = parseInt(el.id.substring(3, 4));
+                let y = parseInt(el.id.substring(4, 5));
+                let midiVal = 60;
+                if (x === 0 && y === 0) {
+
+                } else if (x === 0 && y === 1) {
+                    midiVal += 1;
+                } else if (x === 0 && y === 2) {
+                    midiVal += 2;
+                } else if (x === 1 && y === 0) {
+                    midiVal += 3;
+                } else if (x === 1 && y === 1) {
+                    midiVal += 4;
+                } else if (x === 1 && y === 2) {
+                    midiVal += 5;
+                } else if (x === 2 && y === 0) {
+                    midiVal += 6;
+                } else if (x === 2 && y === 1) {
+                    midiVal += 7;
+                } else if (x === 2 && y === 2) {
+                    midiVal += 8;
+                }
+                pub_nub.publish({
+                    channel: 'liveinteraction',
+                    message: {midi: midiVal}
+                });
+            }, false);
+        }
+    })();
+</script>
+</html>
